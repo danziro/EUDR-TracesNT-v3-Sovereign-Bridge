@@ -1,0 +1,11 @@
+{
+    "report_id": "EUDR-INHU-CERT-1781192549",
+    "compliance_summary": {
+        "raster_integrity_sha256": "16ec79df9f4d56697679abfae6c81c8b5602fa2eae746197df41688bf81b0f5b",
+        "vector_integrity_sha256": "fe89407f26ef34fab6472f2908f6be959c1ad4ddf01ae1d475acbd745d7b1ad4",
+        "audit_date_utc": "2026-06-11T15:42:29.463693+00:00",
+        "eidas_time_authority": "eIDAS Qualified Provider (http://timestamp.digicert.com)",
+        "tsr_token_file": "EUDR_eIDAS_Timestamp.tsr"
+    },
+    "legal_notice": "This document and linked data constitute verified scientific evidence under European Union Regulation 2023/1115. Cryptographic hashes and electronic timestamps comply with the eIDAS framework for digital evidence. Any modification to the linked GeoTIFF or GeoJSON files will break this mathematical chain-of-custody."
+}

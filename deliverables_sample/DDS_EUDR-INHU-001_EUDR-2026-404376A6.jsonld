@@ -1,0 +1,73 @@
+{
+    "@context": {
+        "eudr": "https://gateway.traces.ec.europa.eu/schema/eudr/v1/context.jsonld",
+        "xsd": "http://www.w3.org/2001/XMLSchema#"
+    },
+    "@type": "eudr:DueDiligenceStatement",
+    "dds_id": "EUDR-2026-SAMPLE-TEMPLATE",
+    "metadata": {
+        "operator_eori": "ID-EORI-2026-SAWIT-INHU-01",
+        "operator_name": "Kelompok Tani Inhu Makmur",
+        "origin_country": "ID",
+        "declaration_date": "2026-06-11",
+        "certification_standard": "Inhu-GeoAI-V3-Verified"
+    },
+    "commodity_details": {
+        "hs_code": "15111090",
+        "name": "Oil Palm (Crude Palm Oil)",
+        "weight_estimate_mt": {
+            "@value": 35.49,
+            "@type": "xsd:decimal"
+        },
+        "annual_quantity_estimate_mt": {
+            "@value": 45.5,
+            "@type": "xsd:decimal"
+        }
+    },
+    "geospatial_verification": {
+        "plot_id": "EUDR-INHU-001",
+        "area_ha": {
+            "@value": 8.45,
+            "@type": "xsd:decimal"
+        },
+        "mapping_method": "SAM 2 Precision Contiguous Delineation",
+        "crs": "EPSG:4326",
+        "polygon_geometry": {
+            "type": "Polygon",
+            "coordinates": [
+                [
+                    [102.4987, -0.3811],
+                    [102.5011, -0.3811],
+                    [102.5011, -0.3835],
+                    [102.4987, -0.3835],
+                    [102.4987, -0.3811]
+                ]
+            ]
+        },
+        "centroid_coordinates": {
+            "latitude": -0.3811,
+            "longitude": 102.4987
+        }
+    },
+    "legality_documentation": {
+        "business_license_nib": "1234567890123",
+        "land_permit_hgu": "HGU-INHU-2020-001",
+        "environmental_permit_type": "AMDAL",
+        "environmental_permit_number": "SK-AMDAL-INHU-001",
+        "fpic_status": "COMPLIANT",
+        "fiscal_tax_status": "COMPLIANT",
+        "ispo_certification": {
+            "certificate_number": "ISPO-MUTU-99887",
+            "certification_year": 2024
+        },
+        "country_legislation_reference": "RI Law No. 39/2014 on Plantation & Law No. 32/2009 on Environmental Management"
+    },
+    "due_diligence_verdict": {
+        "status": "NEGLIGIBLE_RISK",
+        "aggregate_risk_score": 0.915,
+        "spatial_resolution": "10m_Metric_Sentinel_Grid",
+        "ai_audit_hash": "eudr-seal-sha256:f8f2b2b1d3d5786899b2446eeea20e3a473a218cb729ff705121b64ff1b23831",
+        "mitigation_notes": "Standard-Risk mitigation executed. Regional baseline locks and satellite change analytics show stability with overall confidence score of 0.915."
+    },
+    "legal_attestation": "Operator declares that due diligence was performed and risk of deforestation was assessed as negligible or actively mitigated in accordance with Regulation (EU) 2023/1115 and Regulation (EU) 2025/2650."
+}
