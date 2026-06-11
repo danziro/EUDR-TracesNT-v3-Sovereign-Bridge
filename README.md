@@ -1,4 +1,3 @@
----
 # Sovereign RegTech Protocol (SRP) — Spatio-Temporal Trust Oracle for Global Commodity Traceability
 
 Sistem gerbang kepatuhan berdaulat (*Sovereign Compliance Gateway*) terpadu berbasis kecerdasan buatan geospasial (GeoAI), rekayasa data terdistribusi asinkron, dan kriptografi pembuktian tanpa pengungkapan (*Zero-Knowledge Proofs*) [91, 93]. 
