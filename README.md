@@ -139,11 +139,7 @@ Sistem mengintegrasikan enkripsi data pribadi secara asimetris/simetris untuk me
 *   **Pilar Kepatuhan Ganda (GDPR Pasal 17 vs. EUDR Pasal 11):**
     *   EUDR mewajibkan penyimpanan data identitas petani (Nama, NIB) selama minimal 5 tahun [59, 115]. GDPR mewajibkan hak penghapusan data tanpa jejak (*Right to be Forgotten*) [89].
     *   Sistem melahirkan arsitektur **Secure Personal Data Vault** [89]. Data nama dan NIB asli disaring dari tabel transaksional publik `plots` dan diganti menggunakan hash searah SHA-256 bernama `association_token` [89]:
-
-    `
-        $$\text{association\_token} = \text{SHA-256}(\text{farmer\_name} \parallel \text{nib})$$
-    
-    `
+        $$\text{association-token} = \text{SHA-256}(\text{farmer-name} \parallel \text{nib})$$
 *   **Enkripsi Simetris Fernet (AES-256):**
     *   Korelasi antara token dengan data asli disimpan secara terisolasi di dalam tabel `secure_personal_data_vault` dalam kondisi terenkripsi AES-256 (Fernet) menggunakan kunci dinamis `VAULT_SECRET_KEY` [89].
     *   Jika petani meminta hak penghapusan, admin cukup menghapus baris kunci di dalam vault (*Key Shredding*) [89]. Seluruh data silsilah ekspor di tingkat Ledger tetap utuh, valid, dan dapat diaudit secara konsisten (memenuhi EUDR) [59], sementara data identitas pribadi petani telah musnah secara kriptografis (memenuhi GDPR) [89].
