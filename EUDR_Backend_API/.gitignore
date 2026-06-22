@@ -1,0 +1,40 @@
+# ==========================================
+# SOVEREIGN REGTECH PROTOCOL .GITIGNORE
+# ==========================================
+
+# 1. Kredensial & Rahasia
+.env
+*.pem
+*.key
+secret_keys.json
+
+# 2. Environment Virtual Python
+venv/
+env/
+.venv/
+
+# 3. Cache Python & Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# 4. Data Transaksional Lokal & Log
+national_g2g_ledger.jsonl
+logs/
+*.log
+
+# 5. Database Lokal & Volume Docker
+*.sqlite3
+pgdata/
+neo4j_data/
+kafka_data/
+
+# 6. Hasil Tangkapan Layar RPA & File Sementara
+/app/screenshots/*.png
+*.tsr.temp
+
+# 7. Konfigurasi IDE
+.vscode/
+.cursorrules
+.idea/
