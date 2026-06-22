@@ -1,6 +1,6 @@
 # API Kepatuhan Pabean EUDR & Mesin Kriptografi Hilir (The Bits Engine)
 
-Layanan backend terdistribusi asinkron skala *enterprise* berbasis **FastAPI**, **Apache Kafka**, dan **PostGIS**. Layanan ini bertindak sebagai **The Bits Engine** dalam *Sovereign RegTech Protocol (SRP)*, bertanggung jawab untuk mengamankan silsilah pengapalan, melakukan verifikasi batas legalitas agraria, membatasi kuota ekspor secara biologis, menyegel berkas pabean berstandar eIDAS, serta mendistribusikan berkas kepatuhan ke pabean Eropa (TRACES NT) [41, 47, 93].
+Layanan backend terdistribusi asinkron skala *enterprise* berbasis **FastAPI**, **Apache Kafka**, dan **PostGIS**. Layanan ini bertindak sebagai **The Bits Engine** dalam *Sovereign RegTech Protocol (SRP)*, bertanggung jawab untuk mengamankan silsilah pengapalan, melakukan verifikasi batas legalitas agraria, membatasi kuota ekspor secara biologis, menyegel berkas pabean berstandar eIDAS, serta mendistribusikan berkas kepatuhan ke pabean Eropa (TRACES NT).
 
 ---
 
@@ -44,39 +44,39 @@ Seluruh logika operasi silsilah kepatuhan diatur di dalam sub-direktori `app/ser
 
 ### 1. `ingestion.py` — Ingesti Citra Spasial & Forensik EXIF
 *   **Forensik Metadata Geospasial:** Mengekstrak lintang (*latitude*), bujur (*longitude*), dan tanggal akuisisi foto secara langsung dari biner EXIF gambar yang dikirim petani hulu.
-*   **Penyaringan Deviasi Lokasi:** Menghitung jarak Haversine secara matematis antara koordinat klaim petani dengan koordinat GPS fisik foto [2.4.9]. Jika jarak deviasi $> 100$ meter, transaksi ekspor dibatalkan seketika dan dilempar ke topik Dead-Letter Queue (DLQ) untuk karantina manual.
+*   **Penyaringan Deviasi Lokasi:** Menghitung jarak Haversine secara matematis antara koordinat klaim petani dengan koordinat GPS fisik foto. Jika jarak deviasi $> 100$ meter, transaksi ekspor dibatalkan seketika dan dilempar ke topik Dead-Letter Queue (DLQ) untuk karantina manual.
 *   **Computer Vision & OCR Parsing:** Menjalankan pra-pemrosesan citra menggunakan OpenCV *Adaptive Thresholding* untuk kontras maksimal, diikuti penarikan teks nota timbang secara dinamis menggunakan mesin *EasyOCR* (Lazy Loading) dan parsing JSON semantik menggunakan *LLM Parser (Gemini-1.5-Flash / GPT-3.5)*.
 
 ### 2. `geo_audit.py` — Sanitasi Topologi Spasial & PostGIS Matrix
-*   **Sanitasi Geometri Shapely:** Menerima koordinat mentah, meluruskan geometri yang melilit/tidak valid (*self-intersection*) secara otonom melalui operasi `make_valid`, menyederhanakan titik simpul menggunakan algoritma Douglas-Peucker dengan toleransi ketat 1.5 meter, serta memaksa dimensi menjadi murni 2D sesuai standar GeoJSON RFC 7946 [25].
-*   **Kueri Spasial Multilapis PostGIS:** Menjalankan kueri database relasional spasial native untuk menguji irisan poligon terhadap Kawasan Hutan Lindung (Prioritas III) dan Hak Guna Usaha (Prioritas I) [61, 62].
+*   **Sanitasi Geometri Shapely:** Menerima koordinat mentah, meluruskan geometri yang melilit/tidak valid (*self-intersection*) secara otonom melalui operasi `make_valid`, menyederhanakan titik simpul menggunakan algoritma Douglas-Peucker dengan toleransi ketat 1.5 meter, serta memaksa dimensi menjadi murni 2D sesuai standar GeoJSON RFC 7946.
+*   **Kueri Spasial Multilapis PostGIS:** Menjalankan kueri database relasional spasial native untuk menguji irisan poligon terhadap Kawasan Hutan Lindung (Prioritas III) dan Hak Guna Usaha (Prioritas I).
 *   **Auto-Clipping System:** Jika terdeteksi tumpang tindih kawasan hutan lindung di luar jaminan HGU yang sah, sistem secara otomatis mengeksekusi operasi pemotongan (*ST_Difference*) dengan penambahan area penyangga (*buffer*) aman sebesar 50 meter guna mengantisipasi galat pergeseran GPS satelit hulu.
 
 ### 3. `vault.py` — Enkripsi PII & Kepatuhan Ganda GDPR (Pasal 17)
 *   **Anonimisasi Satu-Arah:** Mengaburkan data pribadi sensitif (Nama Petani dan Nomor Induk Berusaha / NIB) dari tabel transaksional utama `plots` dan log pabean `audit_ledger`, digantikan oleh token satu arah SHA-256:
     $$\text{association\_token} = \text{SHA-256}(\text{farmer\_name} \parallel \text{nib})$$
-*   **AES-256 Cryptographic Vault:** Menyimpan asosiasi data identitas asli secara terisolasi di dalam tabel terenkripsi penuh `secure_personal_data_vault` menggunakan standar enkripsi simetris Fernet (AES-256) [89].
-*   **Mekanisme Key Shredding:** Jika petani menuntut hak penghapusan data sesuai GDPR Pasal 17, sistem menghancurkan kunci dekripsi data terkait [89]. Rantai sejarah audit pengapalan tetap utuh dan valid secara matematis untuk kepatuhan EUDR, namun data identitas pribadi petani telah musnah secara kriptografis tanpa menyisakan jejak [89].
+*   **AES-256 Cryptographic Vault:** Menyimpan asosiasi data identitas asli secara terisolasi di dalam tabel terenkripsi penuh `secure_personal_data_vault` menggunakan standar enkripsi simetris Fernet (AES-256).
+*   **Mekanisme Key Shredding:** Jika petani menuntut hak penghapusan data sesuai GDPR Pasal 17, sistem menghancurkan kunci dekripsi data terkait. Rantai sejarah audit pengapalan tetap utuh dan valid secara matematis untuk kepatuhan EUDR, namun data identitas pribadi petani telah musnah secara kriptografis tanpa menyisakan jejak.
 
 ### 4. `zkv_engine.py` — Sirkuit Bukti Tanpa Pengungkapan (Groth16 Secp256r1)
-*   **Trusted Setup & Proving:** Bertindak sebagai *Prover* domestik Indonesia yang memegang data HGU mentah yang dilindungi rahasia negara [93, 94]. Sirkuit Groth16 mengevaluasi kesesuaian spasial secara luring di server lokal, membangkitkan tanda tangan digital biner matematika $\pi(r, s)$ yang ringkas menggunakan kunci pembuktian privat (*Proving Key - PK*) berbasis kurva eliptik Secp256r1 (P-256) [93, 94].
+*   **Trusted Setup & Proving:** Bertindak sebagai *Prover* domestik Indonesia yang memegang data HGU mentah yang dilindungi rahasia negara. Sirkuit Groth16 mengevaluasi kesesuaian spasial secara luring di server lokal, membangkitkan tanda tangan digital biner matematika $\pi(r, s)$ yang ringkas menggunakan kunci pembuktian privat (*Proving Key - PK*) berbasis kurva eliptik Secp256r1 (P-256).
 *   **Asymmetric Verification:** Verifikator pabean Eropa di gerbang TRACES NT memegang kunci verifikasi publik (*Verifying Key - VK*) untuk mengeksekusi fungsi verifikasi asimetris:
     $$\text{verify\_zk\_proof}(\pi, x) \rightarrow \text{True} / \text{False}$$
-    Pabean Eropa memverifikasi keabsahan kepatuhan lahan tanpa pernah melihat koordinat spasial HGU asli hulu [93, 94].
+    Pabean Eropa memverifikasi keabsahan kepatuhan lahan tanpa pernah melihat koordinat spasial HGU asli hulu.
 
 ### 5. `cryptography.py` — Segel Stempel Waktu Terpercaya eIDAS (RFC 3161)
-*   **Integritas Anti-Tamper:** Menghitung sidik jari digital (SHA-256 Hash) dari seluruh berkas dokumen pengapalan JSON-LD [42].
-*   **QTSP REST Handshake:** Mengirimkan payload permintaan biner ASN.1 DER-encoded secara asinkron ke server Qualified Trust Service Provider (QTSP) resmi Uni Eropa (seperti DigiCert/InfoCert) [41, 42].
-*   **eIDAS Certified Timestamping:** Menerima dan menyegel berkas biner `.tsr` (Time-Stamp Response) terenkripsi resmi yang membuktikan secara hukum di pengadilan Uni Eropa bahwa data spasial dan transaksi tidak mengalami perubahan setelah tanggal penerbitan stempel waktu [41].
+*   **Integritas Anti-Tamper:** Menghitung sidik jari digital (SHA-256 Hash) dari seluruh berkas dokumen pengapalan JSON-LD.
+*   **QTSP REST Handshake:** Mengirimkan payload permintaan biner ASN.1 DER-encoded secara asinkron ke server Qualified Trust Service Provider (QTSP) resmi Uni Eropa (seperti DigiCert/InfoCert).
+*   **eIDAS Certified Timestamping:** Menerima dan menyegel berkas biner `.tsr` (Time-Stamp Response) terenkripsi resmi yang membuktikan secara hukum di pengadilan Uni Eropa bahwa data spasial dan transaksi tidak mengalami perubahan setelah tanggal penerbitan stempel waktu.
 
 ### 6. `flow_modeling.py` — Pemodelan Aliran Transien CSTR & Aktuasi PLC Industri
-*   **Persamaan Neraca Massa Transien:** Memodelkan tangki penyimpanan CPO di pabrik pengolahan kelapa sawit sebagai reaktor pencampuran kontinu (CSTR) [101]. Sistem secara dinamis menghitung akumulasi konsentrasi kontaminasi minyak ilegal ($C$) menggunakan integrasi numerik Euler setiap menit [101]:
+*   **Persamaan Neraca Massa Transien:** Memodelkan tangki penyimpanan CPO di pabrik pengolahan kelapa sawit sebagai reaktor pencampuran kontinu (CSTR). Sistem secara dinamis menghitung akumulasi konsentrasi kontaminasi minyak ilegal ($C$) menggunakan integrasi numerik Euler setiap menit:
     $$\frac{d(V(t) \cdot C(t))}{dt} = Q_{\text{in}}(t) \cdot C_{\text{in}}(t) - Q_{\text{out}}(t) \cdot C_{\text{out}}(t)$$
-*   **Modbus TCP Actuation:** Jika konsentrasi kontaminasi fluida non-compliant terdeteksi melampaui ambang batas tanpa toleransi ($\le 0.001$), backend asinkron langsung menulis nilai bit **`1`** pada register perangkat kontrol perangkat keras PLC pabrik (*write-register*) melalui protokol Modbus TCP/OPC-UA [102]. PLC secara fisik menggerakkan katup bypass pneumatik untuk membelokkan minyak tercemar ke tangki isolasi khusus domestik secara otomatis [102].
+*   **Modbus TCP Actuation:** Jika konsentrasi kontaminasi fluida non-compliant terdeteksi melampaui ambang batas tanpa toleransi ($\le 0.001$), backend asinkron langsung menulis nilai bit **`1`** pada register perangkat kontrol perangkat keras PLC pabrik (*write-register*) melalui protokol Modbus TCP/OPC-UA. PLC secara fisik menggerakkan katup bypass pneumatik untuk membelokkan minyak tercemar ke tangki isolasi khusus domestik secara otomatis.
 
 ### 7. `fallback_manager.py` — Protokol Darurat & Mitigasi Risiko Stokastik
-*   **Otomasi Peramban Playwright:** Jika pengiriman M2M mengalami kegagalan berturut-turut sebanyak 3 kali akibat kegagalan jaringan pabean Eropa, sistem asinkron meluncurkan bot peramban *Playwright* tanpa kepala (headless) melewati proxy IP domestik Uni Eropa [45]. Bot mensimulasikan login EORI, mengisi formulir DDS, mengunggah berkas spasial secara fisik, menyegel tangkapan layar bukti audit di folder `/app/screenshots/`, serta menarik nomor rujukan URN secara otomatis dari DOM halaman web [42, 46].
-*   **Dynamic Split Shipment:** Memecah satu manifes pengapalan raksasa secara dinamis menjadi beberapa sub-manifes kecil berkapasitas aman (maksimal $\le 1.000$ ton kargo dan $\le 50$ poligon lahan per dokumen DDS) untuk menghindari kegagalan ekspor total jika terjadi masalah data spasial pada salah satu poligon penyuplai [46]:
+*   **Otomasi Peramban Playwright:** Jika pengiriman M2M mengalami kegagalan berturut-turut sebanyak 3 kali akibat kegagalan jaringan pabean Eropa, sistem asinkron meluncurkan bot peramban *Playwright* tanpa kepala (headless) melewati proxy IP domestik Uni Eropa. Bot mensimulasikan login EORI, mengisi formulir DDS, mengunggah berkas spasial secara fisik, menyegel tangkapan layar bukti audit di folder `/app/screenshots/`, serta menarik nomor rujukan URN secara otomatis dari DOM halaman web.
+*   **Dynamic Split Shipment:** Memecah satu manifes pengapalan raksasa secara dinamis menjadi beberapa sub-manifes kecil berkapasitas aman (maksimal $\le 1.000$ ton kargo dan $\le 50$ poligon lahan per dokumen DDS) untuk menghindari kegagalan ekspor total jika terjadi masalah data spasial pada salah satu poligon penyuplai:
     $$N = \max \left( \left\lceil \frac{\text{Total Volume Kargo}}{1.000\text{ MT}} \right\rceil, \left\lceil \frac{\text{Jumlah Total Poligon}}{50} \right\rceil \right)$$
 
 ---
@@ -157,7 +157,7 @@ Menerima data transaksi biner gambar nota dari koperasi tani di lapangan hulu.
     
     | Nama Parameter | Tipe Data | Status | Deskripsi / Validasi |
     | :--- | :--- | :--- | :--- |
-    | `file` | `Binary (File)` | Wajib | Berkas nota timbang (`image/jpeg` atau `image/png`). Harus memiliki EXIF metadata koordinat [2.4.9]. |
+    | `file` | `Binary (File)` | Wajib | Berkas nota timbang (`image/jpeg` atau `image/png`). Harus memiliki EXIF metadata koordinat. |
     | `plot_id` | `String` | Wajib | Identifier unik plot lahan petani hulu. |
     | `nib` | `String` | Wajib | 13-digit angka standar OSS Indonesia (Wajib lolos regex validasi). |
     | `farmer_name` | `String` | Wajib | Nama lengkap petani swadaya penyuplai. |
