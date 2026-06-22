@@ -102,4 +102,5 @@ Jika ada tuntutan hukum penghapusan data, sistem mengeksekusi *Key Shredding*. S
 *Sovereign RegTech Protocol (SRP)*, termasuk model *Earth Observation AI*, diposisikan secara mutlak sebagai **Sistem Pendukung Keputusan (*Decision-Support System/DSS*)**. 
 
 Penyedia arsitektur dan penulis repositori ini **dibebaskan secara mutlak** dari segala bentuk tanggung jawab hukum (*Strict Liability*), gugatan kerugian konsekuensial, penyitaan kontainer komoditas di pelabuhan Eropa, atau denda administratif pabean yang dijatuhkan oleh otoritas kepabeanan Uni Eropa akibat galat operasional perangkat lunak (*software bugs*), *false positive* klasifikasi satelit, maupun perubahan regulasi sepihak dari Komisi Eropa. Segala bentuk implementasi kode di lingkungan produksi komersial berada di bawah risiko dan kewajiban entitas pengguna (*Enterprise Operator*) sepenuhnya.
-```
+
+---
