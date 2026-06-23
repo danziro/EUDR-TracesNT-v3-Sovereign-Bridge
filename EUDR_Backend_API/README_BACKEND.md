@@ -72,7 +72,7 @@ Pemisahan tanggung jawab komputasi diatur secara ketat melalui dua utas pekerja 
 1.  **Penerimaan Event:** Mengonsumsi pesan mentah berisi biner gambar berformat Base64 dari topik `event.raw_ingestion`.
 2.  **Verifikasi Forensik EXIF:** Membaca metadata gambar menggunakan `PIL.ExifTags`. Menguji koordinat fisik pengambilan foto terhadap koordinat klaim geofence hulu menggunakan rumus Haversine. Jika jarak deviasi $> 100$ meter, transaksi dianggap tidak sah dan dilempar ke topik `event.dlq` untuk isolasi.
 3.  **Computer Vision & Adaptive Thresholding:** Mengonversi citra menjadi skala keabu-abuan (*grayscale*) dan menjalankan filter adaptif Gaussian (`cv2.adaptiveThreshold`) untuk menghilangkan bayangan kertas dan mengoptimalkan kontras karakter teks pada nota timbang hulu.
-4.  **EasyOCR & Parsing Semantik LLM:** Pustaka `easyocr` dijalankan menggunakan mekanisme *Lazy Loading* untuk menghemat alokasi RAM kontainer. Hasil ekstraksi teks mentah dikirim ke mesin generator `Gemini-1.5-Flash` atau `GPT-3.5-Turbo` menggunakan kontrak prompt audit kaku untuk menghasilkan struktur JSON murni berisi `extracted_farmer_name` dan `extracted_quantity_mt`.
+4.  **EasyOCR & Parsing Semantik LLM:** Pustaka `easyocr` dijalankan menggunakan mekanisme *Lazy Loading* untuk menghemat alokasi RAM kontainer. Hasil ekstraksi teks mentah dikirim ke mesin generator `Gemini-3.5-Flash` atau `GPT-5` menggunakan kontrak prompt audit kaku untuk menghasilkan struktur JSON murni berisi `extracted_farmer_name` dan `extracted_quantity_mt`.
 5.  **Pelepasan Event:** Hasil parsing yang valid dikemas ulang dan dirilis ke topik `event.geo_validation`.
 
 #### UTAS 2: `worker_spatial_ledger()` — Verifikasi Spasial & Komitmen Transaksi ACID
@@ -97,7 +97,7 @@ Modul ini bertanggung jawab atas gerbang masuk pertama data fisik dari lapangan 
 *   **Validasi Deviasi Spasial (Haversine Filter):** Sistem menguji jarak linier antara koordinat geografis absolut hasil perekaman foto dengan koordinat geofence lahan hulu yang diklaim petani menggunakan rumus Haversine:
     $$d = 2R \arcsin \left( \sqrt{\sin^2\left(\frac{\Delta \phi}{2}\right) + \cos(\phi_1)\cos(\phi_2)\sin^2\left(\frac{\Delta \lambda}{2}\right)} \right)$$
     *   *Liabilitas Bisnis:* Jika jarak deviasi $d > 100$ meter, sistem mendeteksi manipulasi lokasi (*spoofing*). Transaksi otomatis ditolak dan diarahkan ke antrean Dead-Letter Queue (DLQ) untuk mencegah masuknya buah ilegal dari luar geofence legal.
-*   **Adaptive Thresholding & LLM Parser:** Citra nota timbang diproses melalui filter `cv2.adaptiveThreshold` dengan metode Gaussian untuk menghilangkan gangguan pencahayaan eksternal sebelum diekstrak oleh EasyOCR. Hasil teks mentah diumpankan ke model generator (`Gemini-1.5-Flash` atau `GPT-3.5-Turbo`) menggunakan skema output JSON kaku untuk menghasilkan data tonase murni (`extracted_quantity_mt`).
+*   **Adaptive Thresholding & LLM Parser:** Citra nota timbang diproses melalui filter `cv2.adaptiveThreshold` dengan metode Gaussian untuk menghilangkan gangguan pencahayaan eksternal sebelum diekstrak oleh EasyOCR. Hasil teks mentah diumpankan ke model generator (`Gemini-3.5-Flash` atau `GPT-5`) menggunakan skema output JSON kaku untuk menghasilkan data tonase murni (`extracted_quantity_mt`).
 
 ---
 
@@ -234,7 +234,7 @@ Berikut adalah penjelasan fungsi setiap kunci variabel lingkungan yang wajib dik
     ```text
     DATABASE_URL=postgresql+asyncpg://eudr_admin:secure_password_2026@db:5432/geoai_eudr_db
     ```
-*   `GEMINI_API_KEY` & `OPENAI_API_KEY`: Kunci otorisasi API untuk mengakses model bahasa besar (Gemini-1.5-Flash atau GPT-3.5) guna menangani parsing teks tidak terstruktur hasil pembacaan EasyOCR pada nota timbang hulu.
+*   `GEMINI_API_KEY` & `OPENAI_API_KEY`: Kunci otorisasi API untuk mengakses model bahasa besar (Gemini-3.5-Flash atau GPT-5) guna menangani parsing teks tidak terstruktur hasil pembacaan EasyOCR pada nota timbang hulu.
 *   `TRACES_CLIENT_ID` & `TRACES_CLIENT_SECRET`: Kredensial OAuth 2.0 Client Credentials Flow untuk otorisasi mesin-ke-mesin (M2M) dengan server pabean Uni Eropa TRACES NT.
 *   `GRAPH_USER` & `GRAPH_PASSWORD`: Kredensial otentikasi administratif untuk mengamankan koneksi asinkron ke database grafis silsilah Neo4j.
 
