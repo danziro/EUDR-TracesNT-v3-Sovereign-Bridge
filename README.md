@@ -54,27 +54,70 @@ Repositori ini ditata secara ketat untuk memfasilitasi audit oleh tim *Engineeri
 ```text
 Sovereign-SpatioTemporal-Verification-Protocol/
 │
-├── deliverables_sample/           # [BUKTI FORENSIK] Output steril untuk auditor
-│   ├── Cleaned_EUDR_Polygons_2026.geojson
-│   ├── DDS_Payload_Ready.jsonld
-│   ├── EUDR_Final_Certificate_2026.json
-│   └── EUDR_eIDAS_Timestamp.tsr   # <-- Bukti Kriptografi Biner RFC 3161 DER-Encoded
+├── deliverables_sample/               # [FOLDER CONTOH OUTPUT STERIL]
+│   ├── Cleaned_EUDR_Polygons_2026.geojson   # Poligon 2D steril hasil sanitasi topologi spasial (RFC 7946).
+│   ├── DDS_EUDR-INHU-001_40437...json       # Berkas Due Diligence Statement (JSON-LD) yang siap diumpan ke Uni Eropa.
+│   ├── EUDR_eIDAS_Timestamp.tsr             # Token stempel waktu biner asli (ASN.1 DER-encoded RFC 3161).
+│   └── EUDR_Final_Certificate_2026.json     # Bundel sertifikat final (evidentiary cluster) berisi JSON-LD + ZK Proof.
 │
-├── EarthObservation_Pipeline/     # [THE ATOMS ENGINE] Fisika Satelit & GeoAI
-│   ├── GeoAICode_Simulation.ipynb # Mesin fusi radar, optis, dan ZKV
-│   └── README_EarthObservation.md # Panduan komputasi satelit
+├── EarthObservation_Pipeline/         # [THE ATOMS ENGINE] Pipa pengolahan fisika bumi hulu
+│   ├── GeoAICode_Simulation.ipynb           # Notebook interaktif fusi radar/optis, segmentasi, dan analisis runtun waktu.
+│   └── README_EarthObservation.md           # Panduan eksekusi pipeline satelit di lingkungan cloud/Google Colab.
 │
-├── EUDR_Backend_API/              # [THE BITS ENGINE] Ledger, Kafka, PostGIS & API
-│   ├── app/                       # Logika inti (FastAPI, ZKV, eIDAS, Traces M2M)
-│   ├── docker/                    # Kontainerisasi infrastruktur
-│   └── README_BACKEND.md          # Panduan instalasi dan deployment mikroservis
+├── EUDR_Backend_API/                  # [THE BITS ENGINE] API, Pipa Event-Driven & database Transaksional
+│   ├── alembic/                             # Skrip kontrol migrasi skema database relasional spasial
+│   │   ├── versions/                        # Berkas mutasi struktur tabel database fisik (DDL)
+│   │   │   ├── c209c1826454_baseline...py   # Migrasi PostGIS (Setup tabel HGU, Hutan Lindung, dan Partisi Range).
+│   │   │   └── fb0ddd0c8aea_create_sec...py # Migrasi pembentukan Secure Personal Data Vault (GDPR Compliance).
+│   │   ├── env.py                           # Konektor asinkron engine SQLAlchemy untuk migrasi skema database.
+│   │   ├── README                           # Penjelasan alur migrasi database.
+│   │   └── script.py.mako                   # Templat penulisan berkas revisi migrasi.
+│   │
+│   ├── app/                                 # Logika inti layanan mikroservis FastAPI
+│   │   ├── services/                        # Mesin pemrosesan kepatuhan dan audit transaksional
+│   │   │   ├── __init__.py
+│   │   │   ├── audit_readiness.py           # Mesin audit kesiapan: penelusuran lineage, validasi akurasi, dan anti-tamper.
+│   │   │   ├── cryptography.py              # Penyegel kriptografi eIDAS: pengiriman kueri biner ASN.1 ke QTSP Eropa.
+│   │   │   ├── fallback_manager.py          # Pengendali darurat: Playwright RPA bot dan dynamic split shipment.
+│   │   │   ├── flow_modeling.py             # Pemodelan transien neraca massa CSTR & aktuasi register PLC pabrik.
+│   │   │   ├── g2g_gateway.py               # Handshaker ZK-SNARKs dasbor nasional Indonesia (NDI/Kepmenko 178/2024).
+│   │   │   ├── geo_audit.py                 # Analisis spasial: sanitasi topologi Shapely dan polyfill indeks Uber H3.
+│   │   │   ├── ingestion.py                 # Pekerja ingesti: ekstraksi EXIF, OpenCV thresholding, dan parser OCR LLM.
+│   │   │   ├── kafka_manager.py             # Orkestrator Kafka: dual-worker (Vision & Spatial) dan Dead-Letter Queue.
+│   │   │   ├── traces_gateway.py            # Penghubung pabean sekunder.
+│   │   │   ├── traces_m2m.py                # Kompilator payload semantik JSON-LD TRACES-NT v2026.2.
+│   │   │   ├── vault.py                     # Brankas data pribadi GDPR: enkripsi Fernet AES-256 dan Key Shredding.
+│   │   │   └── zkv_engine.py                # Sirkuit ZK-Proof Groth16 (P-256): Prover & Verifier asimetris.
+│   │   │
+│   │   ├── __init__.py
+│   │   ├── database.py                      # Konfigurasi asinkron engine SQLAlchemy & database connection pooling.
+│   │   ├── logger.py                        # Konfigurasi Structured JSON Logging menggunakan structlog.
+│   │   ├── main.py                          # Endpoint API, FastAPI entrypoint, dan kontrol daur hidup kontainer (lifespan).
+│   │   ├── models.py                        # Model database deklaratif relasional spasial PostGIS.
+│   │   └── schemas.py                       # Skema validasi tipe data masukan menggunakan Pydantic.
+│   │
+│   ├── docker/                              # Konfigurasi isolasi lingkungan pengapalan sistem
+│   │   ├── Dockerfile                       # Multi-stage production build untuk optimalisasi ukuran kontainer API.
+│   │   └── init-db.sql                      # Inisialisasi awal ekstensi spasial PostGIS dan UUID OS-SP.
+│   │
+│   ├── venv/                                # Virtual Environment lokal Python (Diabaikan oleh Git via .gitignore).
+│   ├── .env                                 # Kunci rahasia & API credential sistem lokal (Diabaikan oleh Git).
+│   ├── .env.example                         # Templat variabel konfigurasi runtime yang aman dibagikan publik.
+│   ├── alembic.ini                          # Konfigurasi parameter migrasi Alembic.
+│   ├── docker-compose.yml                   # Orkestrator multi-kontainer (PostGIS, Redis, Kafka, Neo4j, FastAPI).
+│   ├── national_g2g_ledger.jsonl            # Buku besar rahasia nasional domestik (Diabaikan oleh Git).
+│   └── README_BACKEND.md                    # Panduan teknis konfigurasi, inisialisasi, dan pengujian Bits Engine.
 │
-└── eudr_sdk/                      # [PUBLIC SDK] Jembatan Integrasi Eksternal
-    ├── eidas_sealer.py            # Klien stempel waktu QTSP eIDAS
-    ├── schemas.py                 # Pydantic schema (HGU, NIB, ISPO, GDPR Vault)
-    ├── soap_wrapper.py            # Konverter JSON-LD ke TRACES SOAP XML v3
-    └── traces_client.py           # Klien transmisi asinkron ke bea cukai Eropa
-```
+├── eudr_sdk/                          # [PUBLIC INTEGRATION GATEWAY] Modul integrasi klien BUMN
+│   ├── __init__.py
+│   ├── eidas_sealer.py                      # SDK klien untuk request tanda tangan stempel waktu QTSP Eropa (eIDAS).
+│   ├── schemas.py                           # Pydantic schema pemetaan komoditas (NIB, HGU, ISPO).
+│   ├── soap_wrapper.py                      # Konverter taktis penulisan JSON-LD hulu menjadi SOAP XML v3 pabean Eropa [2.1.5, 2.3.1].
+│   └── traces_client.py                     # Klien transmisi asinkron M2M ke gerbang pabean TRACES NT [41].
+│
+├── .gitignore                         # Kebijakan penyaringan berkas rahasia dan sampah sistem sebelum push Git.
+├── README.md                          # [THE GRAND MANIFESTO] Cetak biru arsitektur hulu-hilir komprehensif.
+└── requirements.txt                   # Kunci dependensi pustaka Python global berstandar produksi.
 
 ---
 
